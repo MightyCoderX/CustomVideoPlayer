@@ -53,6 +53,7 @@ customVideoPlayer.addEventListener('fullscreenchange', () =>
 videoPlayer.addEventListener('timeupdate', e =>
 {
     progress.value = videoPlayer.currentTime;
+    time.textContent = `${formatSeconds(videoPlayer.currentTime)} / ${formatSeconds(videoPlayer.duration)}`;
 });
 
 videoPlayer.addEventListener('waiting', e =>
@@ -105,11 +106,16 @@ overlay.addEventListener('mousedown', e =>
 
 document.addEventListener('keydown', e =>
 {
-    if(e.key == 'ArrowLeft')
+    if(e.code == 'Space')
+    {
+        playPause();
+    }
+
+    if(e.code == 'ArrowLeft')
     {
         skip(-10);
     }
-    else if(e.key == 'ArrowRight')
+    else if(e.code == 'ArrowRight')
     {
         skip(10)
     }
