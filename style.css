@@ -55,11 +55,16 @@ html, body
     position: relative;
     display: grid;
     place-items: center;
+    width: max-content;
+    height: max-content;
 }
 
 .custom-video-player video
 {
     display: block;
+    aspect-ratio: 16 / 9;
+    width: 90vmin;
+    object-fit: contain;
 }
 
 .custom-video-player .overlay
@@ -69,6 +74,7 @@ html, body
     height: 100%;
     transform: translateY(-50%);
     top: 50%;
+    left: 0;
     background: rgba(0, 0, 0, 0.4);
     transition: opacity 0.5s;
 }
@@ -103,10 +109,10 @@ html, body
 
 .custom-video-player .overlay .progress::-webkit-slider-runnable-track
 {
-    background: rgba(255, 255, 255, 0.479);
+    background: rgba(255, 255, 255, 0.2);
     height: 7.5px;
     position: relative;
-    border-radius: 10px;
+    border-radius: 100vh;
 }
 
 .custom-video-player .overlay .progress::-webkit-slider-thumb
@@ -115,9 +121,8 @@ html, body
     width: 14px;
     height: 14px;
     background: white;
-    position: absolute;
     transform: translateY(-50%);
-    top: 50%;
+    margin-top: 3.75px;
     box-shadow: 0 0 5px #000000;
     border-radius: 50%;
 }
@@ -167,6 +172,7 @@ html, body
     list-style: none;
     border-radius: 5px;
     overflow: hidden;
+    z-index: 2;
 }
 
 .custom-video-player .title-bar .options-dropdown .options.hidden
@@ -220,8 +226,8 @@ html, body
     display: none;
 }
 
-@keyframes spin {
-    from { transform: rotate(0deg); }
+@keyframes spin
+{
     to { transform: rotate(360deg); }
 }
 
