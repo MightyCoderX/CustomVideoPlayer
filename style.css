@@ -15,19 +15,9 @@ html, body
     place-items: center;
 }
 
-.noselect
-{
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-}
-
 .player-button
 {
-    --font-size: 36px;
+    --font-size: 2.5rem;
     cursor: pointer;
     background: transparent;
     border: none;
@@ -59,6 +49,16 @@ html, body
     height: max-content;
 }
 
+.custom-video-player *
+{
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
 .custom-video-player video
 {
     display: block;
@@ -72,11 +72,17 @@ html, body
     position: absolute;
     width: 100%;
     height: 100%;
-    transform: translateY(-50%);
-    top: 50%;
-    left: 0;
     background: rgba(0, 0, 0, 0.4);
     transition: opacity 0.5s;
+    display: grid;
+    grid-template-rows: max-content 1fr 2.5rem max-content;
+    place-items: center;
+    grid-template-areas: 
+        "title-bar"
+        "playback-controls"
+        "progress-controls"
+        "progress-bar";
+    padding: 0.5rem;
 }
 
 .custom-video-player .overlay.hidden
@@ -90,13 +96,127 @@ html, body
     pointer-events: none;
 }
 
+.custom-video-player .overlay.hidden #btnPlayPause
+{
+    pointer-events: all;
+}
+
+.custom-video-player .overlay .title-bar
+{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    grid-area: title-bar;
+}
+
+.custom-video-player .title-bar .title
+{
+    color: white;
+    width: 60%;
+    display: block;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    height: max-content;
+}
+
+.custom-video-player .title-bar .options-dropdown .options-button.player-button
+{
+    display: block;
+    text-align: left;
+    --font-size: 1.5rem;
+}
+
+.custom-video-player .title-bar .options-dropdown .options
+{
+    position: absolute;
+    right: 0;
+    top: 35px;
+    background: #222;
+    width: max-content;
+    min-width: 10rem;
+    max-height: 50vh;
+    font-size: 20px;
+    list-style: none;
+    border-radius: 5px;
+    overflow: auto;
+    z-index: 2;
+}
+
+.custom-video-player .title-bar .options-dropdown .options.hidden
+{
+    opacity: 0;
+    pointer-events: none;
+}
+
+.custom-video-player .title-bar .options-dropdown .options button
+{
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    padding: 30px 20px;
+    width: 100%;
+}
+
+.custom-video-player .title-bar .options-dropdown .options button:hover
+{
+    background-color: #333;
+}
+
+.custom-video-player .title-bar .options-dropdown .options button span
+{
+    font-size: 1.5rem;
+    margin-right: 20px;
+    pointer-events: none;
+    width: 1.5rem;
+}
+
+.custom-video-player .playback-controls
+{
+    grid-area: playback-controls;
+    width: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    margin-top: 1.5rem;
+}
+
+.custom-video-player .loader 
+{
+    border: 2px solid transparent;
+    border-top: 2px solid #3498db;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    animation: spin 2s linear infinite;
+    pointer-events: none;
+    display: none;
+}
+
+@keyframes spin
+{
+    to { transform: rotate(360deg); }
+}
+
+.custom-video-player .playback-controls button:active
+{
+    color: #ccc;
+}
+
+.custom-video-player .overlay .progress-controls
+{
+    grid-area: progress-controls;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
 .custom-video-player .overlay .progress
 {
+    grid-area: progress-bar;
     -webkit-appearance: none;
-    position: absolute;
-    bottom: 5px;
-    left: 5px;
-    width: calc(100% - 10px);
+    width: 100%;
     border-radius: 10px;
     cursor: pointer;
     background-color: transparent;
@@ -125,126 +245,6 @@ html, body
     margin-top: 3.75px;
     box-shadow: 0 0 5px #000000;
     border-radius: 50%;
-}
-
-.custom-video-player .title-bar
-{
-    width: 100%;
-    height: 20px;
-    padding: 0 10px;
-    position: absolute;
-    top: 10px;
-    left: 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.custom-video-player .title-bar .title
-{
-    color: white;
-    width: 60%;
-    display: block;
-    text-overflow: ellipsis;
-    overflow: hidden;
-}
-
-.custom-video-player .title-bar .options-dropdown
-{
-    position: relative;
-}
-
-
-.custom-video-player .title-bar .options-dropdown .options-button.player-button
-{
-    text-align: left;
-    --font-size: 24px;
-}
-
-.custom-video-player .title-bar .options-dropdown .options
-{
-    position: absolute;
-    right: 0;
-    top: 35px;
-    background: #222;
-    width: max-content;
-    font-size: 20px;
-    list-style: none;
-    border-radius: 5px;
-    overflow: hidden;
-    z-index: 2;
-}
-
-.custom-video-player .title-bar .options-dropdown .options.hidden
-{
-    opacity: 0;
-    pointer-events: none;
-}
-
-.custom-video-player .title-bar .options-dropdown .options button
-{
-    font-size: 15px;
-    display: flex;
-    align-items: center;
-    padding: 30px 20px;
-    width: 100%;
-}
-
-.custom-video-player .title-bar .options-dropdown .options button:hover
-{
-    background-color: #333;
-}
-
-.custom-video-player .title-bar .options-dropdown .options button span
-{
-    font-size: 24px;
-    margin-right: 20px;
-    pointer-events: none;
-}
-
-.custom-video-player .playback-controls
-{
-    position: absolute;
-    transform: translate(-50%, -50%);
-    left: 50%;
-    top: 50%;
-    width: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-}
-
-.custom-video-player .loader 
-{
-    border: 2px solid transparent;
-    border-top: 2px solid #3498db;
-    border-radius: 50%;
-    width: 36px;
-    height: 36px;
-    animation: spin 2s linear infinite;
-    pointer-events: none;
-    display: none;
-}
-
-@keyframes spin
-{
-    to { transform: rotate(360deg); }
-}
-
-.custom-video-player .playback-controls button:active
-{
-    color: #ccc;
-}
-
-.custom-video-player .progress-controls
-{
-    position: absolute;
-    bottom: 15px;
-    width: 100%;
-    padding: 0 10px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
 }
 
 .custom-video-player .progress-controls .time
