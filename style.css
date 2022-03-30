@@ -215,11 +215,11 @@ html, body
 .custom-video-player .overlay .progress
 {
     grid-area: progress-bar;
-    -webkit-appearance: none;
     width: 100%;
     border-radius: 10px;
     cursor: pointer;
     background-color: transparent;
+    accent-color: #fff;
 }
 
 .custom-video-player .overlay .progress:focus
@@ -237,10 +237,8 @@ html, body
 
 .custom-video-player .overlay .progress::-webkit-slider-thumb
 {
-    -webkit-appearance: none;
     width: 14px;
     height: 14px;
-    background: white;
     transform: translateY(-50%);
     margin-top: 3.75px;
     box-shadow: 0 0 5px #000000;
@@ -267,8 +265,6 @@ html, body
 
 .custom-video-player .progress-controls .volume .volume-slider
 {
-    display: none;
-    -webkit-appearance: none;
     border-radius: 10px;
     cursor: pointer;
     background-color: transparent;
@@ -277,6 +273,7 @@ html, body
     width: 0;
     pointer-events: none;
     transition: opacity 0.5s, width 0.5s;
+    accent-color: #fff;
 }
 
 .custom-video-player .progress-controls .volume:hover .volume-slider
@@ -293,7 +290,6 @@ html, body
 
 .custom-video-player .progress-controls .volume .volume-slider::-webkit-slider-runnable-track
 {
-    background: rgba(255, 255, 255, 0.479);
     height: 8px;
     position: relative;
     border-radius: 10px;
@@ -301,13 +297,10 @@ html, body
 
 .custom-video-player .progress-controls .volume .volume-slider::-webkit-slider-thumb
 {
-    -webkit-appearance: none;
     width: 15px;
     height: 15px;
-    background: white;
-    position: absolute;
     transform: translateY(-50%);
-    top: 50%;
+    margin-top: 4px;
     box-shadow: 0 0 5px #000000;
     border-radius: 50%;
 }

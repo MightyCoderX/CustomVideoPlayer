@@ -33,6 +33,7 @@ const optionsMenu = [
         id: 'speed',
         label: 'Playback Speed',
         icon: 'speed',
+        currentValue: () => videoPlayer.playbackRate,
         action(value)
         {
             videoPlayer.playbackRate = value;
@@ -54,9 +55,9 @@ const optionsMenu = [
 ];
 
 //Playback Controls
-const btnPrev = customVideoPlayer.querySelector('#btnPrev');
 const loader = customVideoPlayer.querySelector('#loader');
 const btnPlayPause = customVideoPlayer.querySelector('#btnPlayPause');
+const btnPrev = customVideoPlayer.querySelector('#btnPrev');
 const btnNext = customVideoPlayer.querySelector('#btnNext');
 
 //Progress Bar
@@ -69,6 +70,11 @@ const progress = customVideoPlayer.querySelector('#progress');
 videoPlayer.addEventListener('loadedmetadata', e =>
 {
     progress.setAttribute('max', videoPlayer.duration);
+
+    if(videoPlayer.paused)
+    {
+        btnPlayPause.querySelector('span').innerText = 'play_arrow';
+    }
 
     time.textContent = `${formatSeconds(videoPlayer.currentTime)} / ${formatSeconds(videoPlayer.duration)}`;
     customVideoPlayer.querySelector('p.title').textContent = videoPlayer.src.split('/').slice(-1);
@@ -115,6 +121,16 @@ videoPlayer.addEventListener('canplay', e =>
     btnPlayPause.style.display = 'block';
     loader.style.display = 'none';
     videoPlayer.waiting = false;
+});
+
+videoPlayer.addEventListener('play', e =>
+{
+    btnPlayPause.querySelector('span').innerText = 'pause';
+});
+
+videoPlayer.addEventListener('pause', e =>
+{
+    btnPlayPause.querySelector('span').innerText = 'play_arrow';
 });
 
 overlay.addEventListener('mouseleave', e =>
@@ -165,7 +181,7 @@ window.addEventListener('keydown', e =>
     }
     else if(e.code === 'ArrowRight')
     {
-        skip(10)
+        skip(10);
     }
 
     if(e.key === 'm')
@@ -195,6 +211,13 @@ window.addEventListener('click', e =>
         optionsUl.classList.add('hidden');
     }
 });
+
+let currentEp = 1;
+const episodeCount = 900;
+
+btnPrev.addEventListener('click', e => changeEp(-1));
+
+btnNext.addEventListener('click', e => changeEp(1));
 
 function generateOptionsMenu()
 {
@@ -231,7 +254,7 @@ function generateOptionsMenu()
                     const checkmarkSpan = document.createElement('span');
                     checkmarkSpan.classList.add('material-icons');
 
-                    if(value === videoPlayer.playbackRate)
+                    if(value === option.currentValue())
                     {
                         checkmarkSpan.innerText = 'checkmark';
                         valueLi.classList.add('selected');
@@ -266,7 +289,7 @@ function generateOptionsMenu()
                     optionsUl.appendChild(valueLi);
                 }
 
-                optionsUl.querySelector('li.selected').scrollIntoView();
+                optionsUl.querySelector('li.selected')?.scrollIntoView?.();
             });
         }
         else
@@ -279,7 +302,7 @@ function generateOptionsMenu()
     }
 }
 
-btnPlayPause.addEventListener('click', playPause);
+btnPlayPause.addEventListener('click', () => playPause());
 
 btnVolume.addEventListener('click', toggleMute);
 
@@ -309,14 +332,21 @@ function playPause()
     if(videoPlayer.paused || videoPlayer.ended)
     { 
         videoPlayer.play();
-        btnPlayPause.querySelector('span').innerText = 'pause';
     }
     else
     {
         videoPlayer.pause();
-        btnPlayPause.querySelector('span').innerText = 'play_arrow';
     }
-    console.log('Playing', !videoPlayer.paused);
+}
+
+function changeEp(dir)
+{
+    if(dir ===  1 && currentEp >= episodeCount) return;
+    if(dir === -1 && currentEp <= 1) return;
+    currentEp += dir;
+    videoPlayer.src = `https://server22.streamingaw.online/DDL/ANIME/OnePieceITA/OnePiece_Ep_${String(currentEp).padStart(3, '0')}_ITA.mp4`;
+
+    console.log(currentEp);
 }
 
 function toggleFullScreen()
@@ -389,6 +419,11 @@ function formatSeconds(seconds)
     date.setSeconds(seconds);
 
     let regex = seconds > 3600 ? /.*(\d{2}:\d{2}:\d{2}).*/ : /.*(\d{2}:\d{2}).*/;
+
+    if(date.toTimeString() == 'Invalid Date')
+    {
+        return '00:00';
+    }
 
     return date.toTimeString().replace(regex, "$1");
 }
