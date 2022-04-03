@@ -6,12 +6,41 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Saikyou No Player</title>
 
+        <style>
+            *,
+            *::before,
+            *::after
+            {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            html, body
+            {
+                width: 100vw;
+                height: 100vh;
+            }
+            
+            body
+            {
+                background-color: #222;
+                display: grid;
+                place-items: center;
+            }
+        </style>
+
         <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 
         <script src="saikyou-no-player.js"></script>
     </head>
     <body>
-        <saikyou-no-player src-template-url="https://server22.streamingaw.online/DDL/ANIME/OnePieceITA/OnePiece_Ep_{000}_ITA.mp4"/>
-
+        <saikyou-no-player src-count="1013" src-template-url="https://server22.streamingaw.online/DDL/ANIME/OnePieceITA/OnePiece_Ep_{000}_ITA.mp4"></saikyou-no-player>
+        <saikyou-no-player 
+            playlist="https://server22.streamingaw.online/DDL/ANIME/OnePieceITA/OnePiece_Ep_001_ITA.mp4,
+                      https://server22.streamingaw.online/DDL/ANIME/OnePieceITA/OnePiece_Ep_002_ITA.mp4,
+                      https://server22.streamingaw.online/DDL/ANIME/OnePieceITA/OnePiece_Ep_003_ITA.mp4"
+        >
+        </saikyou-no-player>
     </body>
 </html>

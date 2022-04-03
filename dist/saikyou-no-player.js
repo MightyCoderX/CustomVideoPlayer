@@ -342,6 +342,8 @@ class SaikyouNoPlayer extends HTMLElement
         this.shadow.appendChild(saikyouNoPlayerTemplate.content.cloneNode(true));
     }
 
+    static get observedAttributes() { return ['current-src']; }
+
     connectedCallback()
     {
         this.customVideoPlayer = this.shadow.getElementById('customVideoPlayer');
@@ -397,6 +399,9 @@ class SaikyouNoPlayer extends HTMLElement
                     2.5,
                     4
                 ]
+            },
+            {
+                id: ''
             }
         ];
 
@@ -415,11 +420,16 @@ class SaikyouNoPlayer extends HTMLElement
 
         //Properties
         this.props = {
-            srcTemplateUrl: this.getAttribute('src-template-url'),
-        }
+            srcTemplateUrl: this?.getAttribute?.('src-template-url'),
+            srcCount: Number(this?.getAttribute?.('src-count')),
+            playlist: this?.getAttribute?.('playlist')?.split?.(',').map(url => url.trim())
+        };
 
-        this.currentEp = 1;
-        this.episodeCount = 900;
+        this.props.srcCount = this.props.srcCount || this.props.playlist.length;
+
+        console.log(this.props);
+
+        this.currentSrc = 1;
         this.loadSrc();
 
         this.videoPlayer.addEventListener('loadedmetadata', e =>
@@ -432,7 +442,6 @@ class SaikyouNoPlayer extends HTMLElement
             }
 
             this.time.textContent = `${this.formatSeconds(this.videoPlayer.currentTime)} / ${this.formatSeconds(this.videoPlayer.duration)}`;
-            this.customVideoPlayer.querySelector('p.title').textContent = this.videoPlayer.src.split('/').slice(-1);
         });
 
         window.addEventListener('resize', () =>
@@ -567,9 +576,9 @@ class SaikyouNoPlayer extends HTMLElement
             }
         });
 
-        this.btnPrev.addEventListener('click', e => this.changeEp(-1));
+        this.btnPrev.addEventListener('click', e => this.switchSrc(-1));
 
-        this.btnNext.addEventListener('click', e => this.changeEp(1));
+        this.btnNext.addEventListener('click', e => this.switchSrc(1));
 
         this.btnPlayPause.addEventListener('click', () => this.playPause());
 
@@ -595,6 +604,14 @@ class SaikyouNoPlayer extends HTMLElement
             this.videoPlayer.currentTime = this.progress.value;
             this.time.textContent = `${this.formatSeconds(this.videoPlayer.currentTime)} / ${this.formatSeconds(this.videoPlayer.duration)}`;
         });
+    }
+
+    attributeChangedCallback(name, oldValue, newValue)
+    {
+        if(name === 'current-src' && oldValue !== newValue)
+        {
+            
+        }
     }
     
     formatSeconds(seconds)
@@ -676,24 +693,38 @@ class SaikyouNoPlayer extends HTMLElement
         }
     }
 
-    changeEp(dir)
+    switchSrc(dir)
     {
-        if(dir ===  1 && this.currentEp >= this.episodeCount) return;
-        if(dir === -1 && this.currentEp <= 1) return;
-        this.currentEp += dir;
+        if(dir ===  1 && this.currentSrc >= this.props.srcCount) return;
+        if(dir === -1 && this.currentSrc <= 1) return;
+        this.currentSrc += dir;
+        this.setAttribute('current-src', this.currentSrc);
 
         this.loadSrc();
     }
 
     loadSrc()
     {
-        const epNum = this.props.srcTemplateUrl
-            .substring(
-                this.props.srcTemplateUrl.indexOf('{')+1, 
-                this.props.srcTemplateUrl.indexOf('}')
-            );
+        let src = "";
 
-        this.videoPlayer.src = this.props.srcTemplateUrl.replace(/\{\d+\}/gi, String(this.currentEp).padStart(epNum.length, '0'));
+        if(this.props.srcTemplateUrl)
+        {
+            const epNum = this.props.srcTemplateUrl
+                .substring(
+                    this.props.srcTemplateUrl.indexOf('{')+1, 
+                    this.props.srcTemplateUrl.indexOf('}')
+                );
+            
+            src = this.props.srcTemplateUrl.replace(/\{\d+\}/gi, String(this.currentSrc).padStart(epNum.length, '0'));
+        }
+        else if(this.props.playlist)
+        {
+            src = this.props.playlist[this.currentSrc-1];
+        }
+
+        this.videoPlayer.src = src;
+        
+        this.customVideoPlayer.querySelector('p.title').textContent = this.videoPlayer.src.split('/').slice(-1);
     }
 
     playPause()
