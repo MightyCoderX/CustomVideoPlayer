@@ -1,6 +1,7 @@
 const saikyouNoPlayerTemplate = document.createElement('template');
 
 saikyouNoPlayerTemplate.innerHTML = `
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <style>
         *
         {
@@ -343,20 +344,20 @@ class SaikyouNoPlayer extends HTMLElement
 
     connectedCallback()
     {
-        const customVideoPlayer = this.shadow.getElementById('customVideoPlayer');
-        const videoPlayer = customVideoPlayer.querySelector('video#videoPlayer');
-        const overlay = customVideoPlayer.querySelector('#overlay');
+        this.customVideoPlayer = this.shadow.getElementById('customVideoPlayer');
+        this.videoPlayer = this.customVideoPlayer.querySelector('video#videoPlayer');
+        this.overlay = this.customVideoPlayer.querySelector('#overlay');
 
         //Options Menu
-        const btnOptions = customVideoPlayer.querySelector('#btnOptions');
-        const optionsUl = customVideoPlayer.querySelector('#options');
+        this.btnOptions = this.customVideoPlayer.querySelector('#btnOptions');
+        this.optionsUl = this.customVideoPlayer.querySelector('#options');
 
-        const optionsMenu = [
+        this.optionsMenu = [
             {
                 id: 'download',
                 label: 'Download',
                 icon: 'download',
-                action: downloadCurrentSrc
+                action: this.downloadCurrentSrc
             },
             {
                 id: 'pip',
@@ -366,7 +367,7 @@ class SaikyouNoPlayer extends HTMLElement
                 {
                     if(!document.pictureInPictureElement)
                     {
-                        videoPlayer.requestPictureInPicture();
+                        this.videoPlayer.requestPictureInPicture();
                     }
                     else
                     {
@@ -378,10 +379,10 @@ class SaikyouNoPlayer extends HTMLElement
                 id: 'speed',
                 label: 'Playback Speed',
                 icon: 'speed',
-                currentValue: () => videoPlayer.playbackRate,
-                action(value)
+                currentValue: () => this.videoPlayer.playbackRate,
+                action(_, value)
                 {
-                    videoPlayer.playbackRate = value;
+                    this.videoPlayer.playbackRate = value;
                 },
                 values: [
                     0.1,
@@ -400,119 +401,122 @@ class SaikyouNoPlayer extends HTMLElement
         ];
 
         //Playback Controls
-        const loader = customVideoPlayer.querySelector('#loader');
-        const btnPlayPause = customVideoPlayer.querySelector('#btnPlayPause');
-        const btnPrev = customVideoPlayer.querySelector('#btnPrev');
-        const btnNext = customVideoPlayer.querySelector('#btnNext');
+        this.loader = this.customVideoPlayer.querySelector('#loader');
+        this.btnPlayPause = this.customVideoPlayer.querySelector('#btnPlayPause');
+        this.btnPrev = this.customVideoPlayer.querySelector('#btnPrev');
+        this.btnNext = this.customVideoPlayer.querySelector('#btnNext');
 
         //Progress Bar
-        const time = customVideoPlayer.querySelector('#time');
-        const btnToggleFullScreen = customVideoPlayer.querySelector('#btnToggleFullScreen');
-        const btnVolume = customVideoPlayer.querySelector('#btnVolume');
-        const rngVolume = customVideoPlayer.querySelector('#rngVolume');
-        const progress = customVideoPlayer.querySelector('#progress');
+        this.time = this.customVideoPlayer.querySelector('#time');
+        this.btnToggleFullScreen = this.customVideoPlayer.querySelector('#btnToggleFullScreen');
+        this.btnVolume = this.customVideoPlayer.querySelector('#btnVolume');
+        this.rngVolume = this.customVideoPlayer.querySelector('#rngVolume');
+        this.progress = this.customVideoPlayer.querySelector('#progress');
 
         //Properties
-        const props = {
+        this.props = {
             srcTemplateUrl: this.getAttribute('src-template-url'),
-
         }
 
-        videoPlayer.addEventListener('loadedmetadata', e =>
-        {
-            progress.setAttribute('max', videoPlayer.duration);
+        this.currentEp = 1;
+        this.episodeCount = 900;
+        this.loadSrc();
 
-            if(videoPlayer.paused)
+        this.videoPlayer.addEventListener('loadedmetadata', e =>
+        {
+            this.progress.setAttribute('max', this.videoPlayer.duration);
+
+            if(this.videoPlayer.paused)
             {
-                btnPlayPause.querySelector('span').innerText = 'play_arrow';
+                this.btnPlayPause.querySelector('span').innerText = 'play_arrow';
             }
 
-            time.textContent = `${formatSeconds(videoPlayer.currentTime)} / ${formatSeconds(videoPlayer.duration)}`;
-            customVideoPlayer.querySelector('p.title').textContent = videoPlayer.src.split('/').slice(-1);
+            this.time.textContent = `${this.formatSeconds(this.videoPlayer.currentTime)} / ${this.formatSeconds(this.videoPlayer.duration)}`;
+            this.customVideoPlayer.querySelector('p.title').textContent = this.videoPlayer.src.split('/').slice(-1);
         });
 
         window.addEventListener('resize', () =>
         {
             if(!document.fullscreenElement) return;
             
-            videoPlayer.style.width = window.innerWidth + 'px';
-            videoPlayer.style.height = window.innerHeight + 'px';
+            this.videoPlayer.style.width = window.innerWidth + 'px';
+            this.videoPlayer.style.height = window.innerHeight + 'px';
         });
 
-        customVideoPlayer.addEventListener('fullscreenchange', e =>
+        this.customVideoPlayer.addEventListener('fullscreenchange', e =>
         {
             if(!document.fullscreenElement)
             {
-                videoPlayer.removeAttribute('style');
+                this.videoPlayer.removeAttribute('style');
             }
             else
             {
-                videoPlayer.style.width = window.innerWidth + 'px';
-                videoPlayer.style.height = window.innerHeight + 'px';
+                this.videoPlayer.style.width = window.innerWidth + 'px';
+                this.videoPlayer.style.height = window.innerHeight + 'px';
             }
         });
 
-        videoPlayer.addEventListener('timeupdate', e =>
+        this.videoPlayer.addEventListener('timeupdate', e =>
         {
-            progress.value = videoPlayer.currentTime;
-            time.textContent = `${formatSeconds(videoPlayer.currentTime)} / ${formatSeconds(videoPlayer.duration)}`;
+            this.progress.value = this.videoPlayer.currentTime;
+            this.time.textContent = `${this.formatSeconds(this.videoPlayer.currentTime)} / ${this.formatSeconds(this.videoPlayer.duration)}`;
         });
 
-        videoPlayer.addEventListener('waiting', e =>
+        this.videoPlayer.addEventListener('waiting', e =>
         {
-            btnPlayPause.style.display = 'none';
-            loader.style.display = 'block';
-            videoPlayer.waiting = true;
+            this.btnPlayPause.style.display = 'none';
+            this.loader.style.display = 'block';
+            this.videoPlayer.waiting = true;
         });
 
-        videoPlayer.addEventListener('canplay', e =>
+        this.videoPlayer.addEventListener('canplay', e =>
         {
-            btnPlayPause.style.display = 'block';
-            loader.style.display = 'none';
-            videoPlayer.waiting = false;
+            this.btnPlayPause.style.display = 'block';
+            this.loader.style.display = 'none';
+            this.videoPlayer.waiting = false;
         });
 
-        videoPlayer.addEventListener('play', e =>
+        this.videoPlayer.addEventListener('play', e =>
         {
-            btnPlayPause.querySelector('span').innerText = 'pause';
+            this.btnPlayPause.querySelector('span').innerText = 'pause';
         });
 
-        videoPlayer.addEventListener('pause', e =>
+        this.videoPlayer.addEventListener('pause', e =>
         {
-            btnPlayPause.querySelector('span').innerText = 'play_arrow';
+            this.btnPlayPause.querySelector('span').innerText = 'play_arrow';
         });
 
-        overlay.addEventListener('mouseleave', e =>
+        this.overlay.addEventListener('mouseleave', e =>
         {
-            if(!videoPlayer.paused && !videoPlayer.waiting && !overlay.classList.contains('hidden'))
+            if(!this.videoPlayer.paused && !this.videoPlayer.waiting && !this.overlay.classList.contains('hidden'))
             {
-                overlay.classList.add('hidden');
+                this.overlay.classList.add('hidden');
             }
         });
 
         let timeout;
-        overlay.addEventListener('mousemove', e =>
+        this.overlay.addEventListener('mousemove', e =>
         {
-            if(overlay.classList.contains('hidden'))
+            if(this.overlay.classList.contains('hidden'))
             {
-                overlay.classList.remove('hidden');
+                this.overlay.classList.remove('hidden');
             }
 
             clearTimeout(timeout);
             timeout = setTimeout(() =>
             {
-                if(!videoPlayer.paused && !videoPlayer.waiting && !overlay.classList.contains('hidden'))
+                if(!this.videoPlayer.paused && !this.videoPlayer.waiting && !this.overlay.classList.contains('hidden'))
                 {
-                    overlay.classList.add('hidden');
+                    this.overlay.classList.add('hidden');
                 }
             }, 2500);
         });
 
-        overlay.addEventListener('mousedown', e => 
+        this.overlay.addEventListener('mousedown', e =>
         {
-            if(overlay.classList.contains('hidden'))
+            if(this.overlay.classList.contains('hidden'))
             {
-                overlay.classList.remove('hidden');
+                this.overlay.classList.remove('hidden');
             }
         });
 
@@ -521,267 +525,272 @@ class SaikyouNoPlayer extends HTMLElement
             if(e.code === 'Space')
             {
                 e.preventDefault();
-                playPause();
+                this.playPause();
             }
 
             if(e.code === 'ArrowLeft')
             {
-                skip(-10);
+                this.skip(-10);
             }
             else if(e.code === 'ArrowRight')
             {
-                skip(10);
+                this.skip(10);
             }
 
             if(e.key === 'm')
             {
-                toggleMute();
+                this.toggleMute();
             }
 
             if(e.key === 'f')
             {
-                toggleFullScreen();
+                this.toggleFullScreen();
             }
         });
 
-        btnOptions.addEventListener('click', e =>
+        this.btnOptions.addEventListener('click', e =>
         {
-            if(optionsUl.classList.contains('hidden'))
+            if(this.optionsUl.classList.contains('hidden'))
             {
-                generateOptionsMenu();
+                this.generateOptionsMenu();
             }
-            optionsUl.classList.toggle('hidden');
+            this.optionsUl.classList.toggle('hidden');
         });
 
         window.addEventListener('click', e =>
         {
-            if(!e.path.includes(document.querySelector('.options-dropdown')))
+            const path = e.path || (e.composedPath && e.composedPath());
+
+            if(!path.includes(this.shadow.querySelector('.options-dropdown')))
             {
-                optionsUl.classList.add('hidden');
+                this.optionsUl.classList.add('hidden');
             }
         });
 
-        let currentEp = 1;
-        const episodeCount = 900;
+        this.btnPrev.addEventListener('click', e => this.changeEp(-1));
 
-        btnPrev.addEventListener('click', e => changeEp(-1));
+        this.btnNext.addEventListener('click', e => this.changeEp(1));
 
-        btnNext.addEventListener('click', e => changeEp(1));
+        this.btnPlayPause.addEventListener('click', () => this.playPause());
 
-        function generateOptionsMenu()
+        this.btnVolume.addEventListener('click', this.toggleMute.bind(this));
+
+        this.rngVolume.addEventListener('input', e =>
         {
-            optionsUl.innerHTML = '';
-            for(const option of optionsMenu)
+            if(this.rngVolume.value == 0)
             {
-                const optionLi = document.createElement('li');
+                this.btnVolume.querySelector('span').innerText = 'volume_off';
+            }
+            else if(this.rngVolume.value > 0)
+            {
+                this.btnVolume.querySelector('span').innerText = 'volume_up';
+            }
+            this.videoPlayer.volume = this.rngVolume.value;
+        });
 
-                const optionBtn = document.createElement('button');
-                optionBtn.classList.add('player-button');
-                
-                const iconSpan = document.createElement('span');
-                iconSpan.classList.add('material-icons');
-                iconSpan.innerText = option.icon;
+        this.btnToggleFullScreen.addEventListener('click', this.toggleFullScreen.bind(this));
 
-                optionBtn.appendChild(iconSpan);
+        this.progress.addEventListener('input', e =>
+        {
+            this.videoPlayer.currentTime = this.progress.value;
+            this.time.textContent = `${this.formatSeconds(this.videoPlayer.currentTime)} / ${this.formatSeconds(this.videoPlayer.duration)}`;
+        });
+    }
+    
+    formatSeconds(seconds)
+    {
+        var date = new Date(1970,0,1);
+        date.setSeconds(seconds);
 
-                optionBtn.innerHTML += ` ${option.label}`;
+        let regex = seconds > 3600 ? /.*(\d{2}:\d{2}:\d{2}).*/ : /.*(\d{2}:\d{2}).*/;
 
-                optionLi.appendChild(optionBtn);
+        if(date.toTimeString() == 'Invalid Date')
+        {
+            return '00:00';
+        }
 
-                if(option?.values)
+        return date.toTimeString().replace(regex, "$1");
+    }
+
+    downloadCurrentSrc()
+    {  
+        const aElem = document.createElement('a');
+        aElem.download = this.videoPlayer.currentSrc.split('/').slice(-1);
+        aElem.style.display = 'none';
+
+        fetch(this.videoPlayer.currentSrc)
+        .then(res => res.blob())
+        .then(blob =>
+        {
+            aElem.href = URL.createObjectURL(blob);
+        })
+        .catch(err =>
+        {
+            console.error(err);
+            aElem.href = this.videoPlayer.currentSrc;
+        })
+        .finally(() =>
+        {
+            this.shadow.appendChild(aElem);
+            aElem.click();
+            aElem.remove();
+        });
+
+    }
+
+    skip(amount)
+    {
+        this.videoPlayer.currentTime += amount;
+        this.time.textContent = `${this.formatSeconds(this.videoPlayer.currentTime)} / ${this.formatSeconds(this.videoPlayer.duration)}`;
+    }
+
+    toggleMute()
+    {
+        if(this.videoPlayer.volume == 0)
+        {
+            if(this.rngVolume.value == 0)
+            {
+                this.rngVolume.value = 1;
+            }
+            this.videoPlayer.volume = this.rngVolume.value;
+            this.btnVolume.querySelector('span').innerText = 'volume_up';
+        }
+        else if(this.videoPlayer.volume > 0)
+        {
+            this.videoPlayer.volume = 0;
+            this.btnVolume.querySelector('span').innerText = 'volume_off';
+        }
+    }
+
+    toggleFullScreen()
+    {
+        if(!document.fullscreenElement)
+        {
+            this.shadow.querySelector('#btnToggleFullScreen span').innerText = 'fullscreen_exit';
+            this.shadow.querySelector('#customVideoPlayer').requestFullscreen();
+        }
+        else
+        {
+            this.shadow.querySelector('#btnToggleFullScreen span').innerText = 'fullscreen';
+            document.exitFullscreen();
+        }
+    }
+
+    changeEp(dir)
+    {
+        if(dir ===  1 && this.currentEp >= this.episodeCount) return;
+        if(dir === -1 && this.currentEp <= 1) return;
+        this.currentEp += dir;
+
+        this.loadSrc();
+    }
+
+    loadSrc()
+    {
+        const epNum = this.props.srcTemplateUrl
+            .substring(
+                this.props.srcTemplateUrl.indexOf('{')+1, 
+                this.props.srcTemplateUrl.indexOf('}')
+            );
+
+        this.videoPlayer.src = this.props.srcTemplateUrl.replace(/\{\d+\}/gi, String(this.currentEp).padStart(epNum.length, '0'));
+    }
+
+    playPause()
+    {
+        if(this.videoPlayer.paused || this.videoPlayer.ended)
+        { 
+            this.videoPlayer.play();
+        }
+        else
+        {
+            this.videoPlayer.pause();
+        }
+    }
+
+    generateOptionsMenu()
+    {
+        this.optionsUl.innerHTML = '';
+        for(const option of this.optionsMenu)
+        {
+            const optionLi = document.createElement('li');
+
+            const optionBtn = document.createElement('button');
+            optionBtn.classList.add('player-button');
+            
+            const iconSpan = document.createElement('span');
+            iconSpan.classList.add('material-icons');
+            iconSpan.innerText = option.icon;
+
+            optionBtn.appendChild(iconSpan);
+
+            optionBtn.innerHTML += ` ${option.label}`;
+
+            optionLi.appendChild(optionBtn);
+
+            if(option?.values)
+            {
+                optionBtn.addEventListener('click', e =>
                 {
-                    optionBtn.addEventListener('click', e =>
+                    this.optionsUl.innerHTML = '';
+                    for(const value of option.values)
                     {
-                        optionsUl.innerHTML = '';
-                        for(const value of option.values)
+                        const valueLi = document.createElement('li');
+
+                        const valueBtn = document.createElement('button');
+                        valueBtn.classList.add('player-button');
+
+                        const checkmarkSpan = document.createElement('span');
+                        checkmarkSpan.classList.add('material-icons');
+
+                        if(value === option.currentValue())
                         {
-                            const valueLi = document.createElement('li');
-
-                            const valueBtn = document.createElement('button');
-                            valueBtn.classList.add('player-button');
-
-                            const checkmarkSpan = document.createElement('span');
-                            checkmarkSpan.classList.add('material-icons');
-
-                            if(value === option.currentValue())
-                            {
-                                checkmarkSpan.innerText = 'checkmark';
-                                valueLi.classList.add('selected');
-                            }
-
-                            valueBtn.addEventListener('click', e =>
-                            {
-                                option.action(value);
-                                optionsUl.classList.add('hidden');
-                                
-
-                                for(const li of optionsUl.querySelectorAll('li'))
-                                {
-                                    if(e.target === li.querySelector('button'))
-                                    {
-                                        li.querySelector('span').innerText = 'checkmark';
-                                        li.classList.add('selected');
-                                    }
-                                    else
-                                    {
-                                        li.querySelector('span').innerText = '';
-                                        li.querySelector('span').classList.add('remove');
-                                    }
-                                }
-                            });
-                            
-                            valueBtn.appendChild(checkmarkSpan);
-
-                            valueBtn.innerHTML += ` ${value}x`;
-
-                            valueLi.appendChild(valueBtn);
-                            optionsUl.appendChild(valueLi);
+                            checkmarkSpan.innerText = 'checkmark';
+                            valueLi.classList.add('selected');
                         }
 
-                        optionsUl.querySelector('li.selected')?.scrollIntoView?.();
-                    });
-                }
-                else
-                {
-                    optionBtn.addEventListener('click', option.action);
-                    optionsUl.classList.add('hidden');
-                }
+                        valueBtn.addEventListener('click', e =>
+                        {
+                            option.action.bind(this, e, value)();
+                            this.optionsUl.classList.add('hidden');
+                            
 
-                optionsUl.appendChild(optionLi);
-            }
-        }
+                            for(const li of this.optionsUl.querySelectorAll('li'))
+                            {
+                                if(e.target === li.querySelector('button'))
+                                {
+                                    li.querySelector('span').innerText = 'checkmark';
+                                    li.classList.add('selected');
+                                }
+                                else
+                                {
+                                    li.querySelector('span').innerText = '';
+                                    li.querySelector('span').classList.add('remove');
+                                }
+                            }
+                        });
+                        
+                        valueBtn.appendChild(checkmarkSpan);
 
-        btnPlayPause.addEventListener('click', () => playPause());
+                        valueBtn.innerHTML += ` ${value}x`;
 
-        btnVolume.addEventListener('click', toggleMute);
+                        valueLi.appendChild(valueBtn);
+                        this.optionsUl.appendChild(valueLi);
+                    }
 
-        rngVolume.addEventListener('input', e =>
-        {
-            if(rngVolume.value == 0)
-            {
-                btnVolume.querySelector('span').innerText = 'volume_off';
-            }
-            else if(rngVolume.value > 0)
-            {
-                btnVolume.querySelector('span').innerText = 'volume_up';
-            }
-            videoPlayer.volume = rngVolume.value;
-        });
-
-        btnToggleFullScreen.addEventListener('click', toggleFullScreen);
-
-        progress.addEventListener('input', e =>
-        {
-            videoPlayer.currentTime = progress.value;
-            time.textContent = `${formatSeconds(videoPlayer.currentTime)} / ${formatSeconds(videoPlayer.duration)}`;
-        });
-
-        function playPause()
-        {
-            if(videoPlayer.paused || videoPlayer.ended)
-            { 
-                videoPlayer.play();
+                    this.optionsUl.querySelector('li.selected')?.scrollIntoView?.();
+                });
             }
             else
             {
-                videoPlayer.pause();
-            }
-        }
-
-        function changeEp(dir)
-        {
-            if(dir ===  1 && currentEp >= episodeCount) return;
-            if(dir === -1 && currentEp <= 1) return;
-            currentEp += dir;
-
-            const epNum = props.srcTemplateUrl
-                .substring(
-                    props.srcTemplateUrl.indexOf('{')+1, 
-                    props.srcTemplateUrl.indexOf('}')
-                );
-
-            videoPlayer.src = props.srcTemplateUrl.replace('\{\d+\}', String(currentEp).padStart(epNum.length, '0'));
-
-            console.log(currentEp);
-        }
-
-        function toggleFullScreen()
-        {
-            if(!document.fullscreenElement)
-            {
-                btnToggleFullScreen.querySelector('span').innerText = 'fullscreen_exit';
-                customVideoPlayer.requestFullscreen();
-            }
-            else
-            {
-                btnToggleFullScreen.querySelector('span').innerText = 'fullscreen';
-                document.exitFullscreen();
-            }
-        }
-
-        function toggleMute()
-        {
-            if(videoPlayer.volume == 0)
-            {
-                if(rngVolume.value == 0)
+                optionBtn.addEventListener('click', e => 
                 {
-                    rngVolume.value = 1;
-                }
-                videoPlayer.volume = rngVolume.value;
-                btnVolume.querySelector('span').innerText = 'volume_up';
-            }
-            else if(videoPlayer.volume > 0)
-            {
-                videoPlayer.volume = 0;
-                btnVolume.querySelector('span').innerText = 'volume_off';
-            }
-        }
-
-        function skip(amount)
-        {
-            videoPlayer.currentTime += amount;
-            time.textContent = `${formatSeconds(videoPlayer.currentTime)} / ${formatSeconds(videoPlayer.duration)}`;
-        }
-
-        function downloadCurrentSrc()
-        {  
-            const aElem = document.createElement('a');
-            aElem.download = videoPlayer.currentSrc.split('/').slice(-1);
-            aElem.style.display = 'none';
-
-            fetch(videoPlayer.currentSrc)
-            .then(res => res.blob())
-            .then(blob =>
-            {
-                aElem.href = URL.createObjectURL(blob);
-            })
-            .catch(err =>
-            {
-                console.error(err);
-                aElem.href = videoPlayer.currentSrc;
-            })
-            .finally(() =>
-            {
-                document.body.appendChild(aElem);
-                aElem.click();
-                aElem.remove();
-            });
-
-        }
-
-        function formatSeconds(seconds)
-        {
-            var date = new Date(1970,0,1);
-            date.setSeconds(seconds);
-
-            let regex = seconds > 3600 ? /.*(\d{2}:\d{2}:\d{2}).*/ : /.*(\d{2}:\d{2}).*/;
-
-            if(date.toTimeString() == 'Invalid Date')
-            {
-                return '00:00';
+                    option.action.bind(this)(e);
+                    this.optionsUl.classList.add('hidden');
+                });
             }
 
-            return date.toTimeString().replace(regex, "$1");
+            this.optionsUl.appendChild(optionLi);
         }
     }
 }
