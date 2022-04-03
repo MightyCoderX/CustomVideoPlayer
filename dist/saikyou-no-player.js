@@ -610,7 +610,8 @@ class SaikyouNoPlayer extends HTMLElement
     {
         if(name === 'current-src' && oldValue !== newValue)
         {
-            
+            this.currentSrc = Number(this.getAttribute('current-src'));
+            this.loadSrc();
         }
     }
     
@@ -693,6 +694,17 @@ class SaikyouNoPlayer extends HTMLElement
         }
     }
 
+    getSrcFromTemplate()
+    {
+        const epNum = this.props.srcTemplateUrl
+                .substring(
+                    this.props.srcTemplateUrl.indexOf('{')+1, 
+                    this.props.srcTemplateUrl.indexOf('}')
+                );
+
+        return this.props.srcTemplateUrl.replace(/\{\d+\}/gi, String(this.currentSrc).padStart(epNum.length, '0'))
+    }
+
     switchSrc(dir)
     {
         if(dir ===  1 && this.currentSrc >= this.props.srcCount) return;
@@ -709,13 +721,7 @@ class SaikyouNoPlayer extends HTMLElement
 
         if(this.props.srcTemplateUrl)
         {
-            const epNum = this.props.srcTemplateUrl
-                .substring(
-                    this.props.srcTemplateUrl.indexOf('{')+1, 
-                    this.props.srcTemplateUrl.indexOf('}')
-                );
-            
-            src = this.props.srcTemplateUrl.replace(/\{\d+\}/gi, String(this.currentSrc).padStart(epNum.length, '0'));
+            src = this.getSrcFromTemplate();
         }
         else if(this.props.playlist)
         {
